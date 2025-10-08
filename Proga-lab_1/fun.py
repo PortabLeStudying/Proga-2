@@ -5,3 +5,5 @@ def two_sum(nums, tar):
         if comp in num_x:
             return [num_x[comp], i]
         num_x[num] = i
+    print("Нет подходящих слагаемых для заданной суммы.")
+    return None
