@@ -180,18 +180,18 @@ if __name__ == "__main__":
 import unittest
 from bin_la_ner import gen_bin_tree_non_recursive
 
+
 class TestGenBinTreeLambda(unittest.TestCase):
+    """Тесты для функции gen_bin_tree_non_recursive."""
 
     def test_h_1(self):
-        """Тест: высота 1 — только корень (без потомков)."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 1 — только корень."""
         result = gen_bin_tree_non_recursive(1, 10, lambda x: x + 1, lambda x: x - 1)
         expected = {"value": 10}
         self.assertEqual(result, expected)
 
     def test_h_2(self):
-        """Тест: высота 2 — корень + один уровень потомков."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 2 — корень и его потомки."""
         result = gen_bin_tree_non_recursive(2, 5, lambda x: x * 2, lambda x: x / 2)
         expected = {
             "value": 5,
@@ -201,8 +201,7 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_h_3(self):
-        """Тест: высота 3 — два уровня ветвления."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 3 — два уровня ветвления."""
         result = gen_bin_tree_non_recursive(3, 1, lambda x: x + 2, lambda x: x * 3)
         expected = {
             "value": 1,
@@ -220,8 +219,7 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_h_4_complex(self):
-        """Тест: высота 4 с возведением в степень и вычитанием."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 4 с нелинейными операциями."""
         result = gen_bin_tree_non_recursive(4, 2, lambda x: x ** 2, lambda x: x - 1)
         expected = {
             "value": 2,
@@ -255,14 +253,12 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_invalid_height_zero(self):
-        """Тест: высота 0 должна вызывать ValueError (мин. высота = 1)."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет, что высота 0 вызывает ValueError."""
         with self.assertRaises(ValueError):
             gen_bin_tree_non_recursive(0, 5, lambda x: x, lambda x: x)
 
     def test_invalid_height_negative(self):
-        """Тест: отрицательная высота — ошибка."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет, что отрицательная высота вызывает ValueError."""
         with self.assertRaises(ValueError):
             gen_bin_tree_non_recursive(-1, 5, lambda x: x, lambda x: x)
 
@@ -296,5 +292,6 @@ OK
 - Вычисляет потомков по пользовательским формулам
 - Обрабатывает ошибки в выражениях и недопустимые значения высоты
 - Работает с параметрами по умолчанию при отсутствии ввода
+- Содержит комментарии стандарта PEP 257
 
 Решение полностью соответствует требованиям лабораторной работы.
