@@ -1,18 +1,18 @@
 import unittest
 from bin_la import gen_bin_tree
 
+
 class TestGenBinTreeLambda(unittest.TestCase):
+    """Тесты для функции gen_bin_tree."""
 
     def test_h_1(self):
-        """Тест: высота 1 — только корень (без потомков)."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 1 — только корень."""
         result = gen_bin_tree(1, 10, lambda x: x + 1, lambda x: x - 1)
         expected = {"value": 10}
         self.assertEqual(result, expected)
 
     def test_h_2(self):
-        """Тест: высота 2 — корень + один уровень потомков."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 2 — корень и его потомки."""
         result = gen_bin_tree(2, 5, lambda x: x * 2, lambda x: x / 2)
         expected = {
             "value": 5,
@@ -22,8 +22,7 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_h_3(self):
-        """Тест: высота 3 — два уровня ветвления."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 3 — два уровня ветвления."""
         result = gen_bin_tree(3, 1, lambda x: x + 2, lambda x: x * 3)
         expected = {
             "value": 1,
@@ -41,8 +40,7 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_h_4_complex(self):
-        """Тест: высота 4 с возведением в степень и вычитанием."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет дерево высоты 4 с нелинейными операциями."""
         result = gen_bin_tree(4, 2, lambda x: x ** 2, lambda x: x - 1)
         expected = {
             "value": 2,
@@ -76,8 +74,7 @@ class TestGenBinTreeLambda(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_division_by_zero(self):
-        """Тест: деление на ноль при height=2 вызывает исключение."""
-        print(f"Запущен тест: {self._testMethodName}")
+        """Проверяет обработку ZeroDivisionError при делении на ноль."""
         with self.assertRaises(ZeroDivisionError):
             gen_bin_tree(2, 1, lambda x: x / 0, lambda x: x + 1)
 
