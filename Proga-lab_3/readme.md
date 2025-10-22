@@ -33,6 +33,20 @@
 ### Код функции (`bin_la_ner.py`)
 ```python
 def gen_bin_tree_non_recursive(height: int, root, left_lambda, right_lambda):
+    """Генерирует бинарное дерево заданной высоты без рекурсии.
+
+    Аргументы:
+        height (int): Высота дерева (должна быть >= 1).
+        root: Значение корневого узла.
+        left_lambda: Функция для вычисления левого потомка.
+        right_lambda: Функция для вычисления правого потомка.
+
+    Возвращает:
+        dict: Словарь, представляющий бинарное дерево.
+
+    Вызывает:
+        ValueError: Если высота < 1 или при ошибке вычисления лямбда-функций.
+    """
     if height < 1:
         raise ValueError("Высота должна быть >= 1")
 
@@ -69,7 +83,17 @@ def gen_bin_tree_non_recursive(height: int, root, left_lambda, right_lambda):
 
 
 def parse_lambda(expr: str):
-    """Преобразует строку в lambda"""
+    """Преобразует строковое выражение в лямбда-функцию от 'root'.
+
+    Аргументы:
+        expr (str): Выражение, использующее переменную 'root'.
+
+    Возвращает:
+        function: Лямбда-функция, принимающая один аргумент ('root').
+
+    Вызывает:
+        ValueError: Если выражение пустое или содержит синтаксическую ошибку.
+    """
     if not expr.strip():
         raise ValueError("Пустое выражение")
     code = f"lambda root: {expr}"
@@ -83,6 +107,7 @@ def parse_lambda(expr: str):
 
 
 def main():
+    """Основная функция интерактивного режима генерации бинарного дерева."""
     print("=== Генератор бинарного дерева ===")
     print("Нажмите Enter для использования значений по умолчанию:")
     print("  root = 2, height = 6, left = root*3, right = root+4\n")
