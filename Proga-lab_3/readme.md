@@ -2,11 +2,11 @@
 
 ## 1. Задача
 
-Разработать программу на языке Python, которая нерекурсивно строит бинарное дерево заданной высоты с пользовательскими правилами вычисления левого и правого потомков.
+Разработать программу на языке Python, которая **нерекурсивно** строит бинарное дерево заданной высоты с пользовательскими правилами вычисления левого и правого потомков.
 
 Условия:
 - В корне дерева находится число, заданное пользователем (`root`).
-- Высота дерева (`height`) задаётся пользователем (0 — только корень).
+- Высота дерева (`height`) задаётся пользователем (1 — только корень).
 - Левый и правый потомки вычисляются по формулам, введённым пользователем, с использованием переменной `root`.
 - Дерево должно быть представлено в виде вложенного словаря.
 - При отсутствии ввода используются параметры по умолчанию:  
@@ -17,28 +17,12 @@
   ```python
   {'value': 2}
   ```
-- `root = 1`, `height = 2`, `left = root+2`, `right = root*3` →  
+- `root = 1`, `height = 2`, `left = root*2`, `right = root+1` →  
   ```python
   {
     'value': 1,
-    'left': {'value': 3},
-    'right': {'value': 3}
-  }
-  ```
-- `root = 2`, `height = 3`, `left = root**2`, `right = root-1` →  
-  ```python
-  {
-    'value': 2,
-    'left': {
-      'value': 4,
-      'left': {'value': 16},
-      'right': {'value': 3}
-    },
-    'right': {
-      'value': 1,
-      'left': {'value': 1},
-      'right': {'value': 0}
-    }
+    'left': {'value': 2},
+    'right': {'value': 2}
   }
   ```
 
@@ -46,14 +30,15 @@
 
 ## 2. Решение
 
-### Код функции (`bin_nerek.py`)
+### Код функции (`bin_la_ner.py`)
 ```python
-def gen_bin_tree_non_recursive(height: int, root, left_expr: str, right_expr: str):
-    if height == 0:
-        return {"value": root}
+def gen_bin_tree_non_recursive(height: int, root, left_lambda, right_lambda):
+    if height < 1:
+        raise ValueError("Высота должна быть >= 1")
 
     root_node = {"value": root}
-    if height == 0:
+
+    if height == 1:
         return root_node
 
     stack = [(root_node, height)]
@@ -64,12 +49,11 @@ def gen_bin_tree_non_recursive(height: int, root, left_expr: str, right_expr: st
         if h <= 1:
             continue
 
-        local_vars = {"root": current_node["value"]}
         try:
-            left_val = eval(left_expr, {"__builtins__": {}}, local_vars)
-            right_val = eval(right_expr, {"__builtins__": {}}, local_vars)
+            left_val = left_lambda(current_node["value"])
+            right_val = right_lambda(current_node["value"])
         except Exception as e:
-            raise ValueError(f"Ошибка при вычислении выражения: {e}")
+            raise ValueError(f"Ошибка при вычислении лямбда-функции: {e}")
 
         left_node = {"value": left_val}
         right_node = {"value": right_val}
@@ -84,6 +68,20 @@ def gen_bin_tree_non_recursive(height: int, root, left_expr: str, right_expr: st
     return root_node
 
 
+def parse_lambda(expr: str):
+    """Преобразует строку в lambda"""
+    if not expr.strip():
+        raise ValueError("Пустое выражение")
+    code = f"lambda root: {expr}"
+    try:
+        func = eval(code, {"__builtins__": {}}, {})
+        if not callable(func):
+            raise ValueError("Результат не является функцией")
+        return func
+    except Exception as e:
+        raise ValueError(f"Неверный синтаксис выражения: {e}")
+
+
 def main():
     print("=== Генератор бинарного дерева ===")
     print("Нажмите Enter для использования значений по умолчанию:")
@@ -93,14 +91,14 @@ def main():
         root_input = input("Введите значение корня (root) [по умолчанию: 2]: ").strip()
         root = float(root_input) if root_input != "" else 2.0
 
-        height_input = input("Введите высоту дерева (height, >= 0) [по умолчанию: 6]: ").strip()
+        height_input = input("Введите высоту дерева (height, >= 1) [по умолчанию: 6]: ").strip()
         height = int(height_input) if height_input != "" else 6
-        if height < 0:
-            print("Высота не может быть отрицательной. Установлено значение 0.")
-            height = 0
+        if height < 1:
+            print("Высота должна быть >= 1. Установлено значение 1.")
+            height = 1
 
         print("\nВведите формулы для потомков. Используйте переменную 'root'.")
-        print("Примеры: root*3, root+4, root-4, root+root*3/6, root**2 и т.д.")
+        print("Примеры: root*3, root+4, root**2, root/2 и т.д.")
 
         left_expr = input("Формула для левого потомка [по умолчанию: root*3]: ").strip()
         if left_expr == "":
@@ -110,7 +108,10 @@ def main():
         if right_expr == "":
             right_expr = "root+4"
 
-        tree = gen_bin_tree_non_recursive(height, root, left_expr, right_expr)
+        left_func = parse_lambda(left_expr)
+        right_func = parse_lambda(right_expr)
+
+        tree = gen_bin_tree_non_recursive(height, root, left_func, right_func)
 
         print("\nНаш дуб:")
         import pprint
@@ -135,85 +136,110 @@ if __name__ == "__main__":
 
 ## 3. Код
 
-Код разделён на два файла:
-
-### `bin_nerek.py`
-- Содержит функцию `gen_bin_tree_non_recursive`, реализующую стековый подход к построению бинарного дерева.
+### `bin_la_ner.py`
+- Реализует **нерекурсивный** алгоритм построения бинарного дерева с использованием стека.
+- Поддерживает высоту ≥ 1.
+- Содержит функцию `gen_bin_tree_non_recursive`.
+- Включает интерактивный режим в функции `main()`.
 - При запуске напрямую запрашивает параметры у пользователя или использует значения по умолчанию.
+- Проверяет корректность ввода высоты и выражений.
 
-### `test_bin_nerek.py`
-- Импортирует функцию из `bin_nerek.py`.
-- Содержит 7 тестов с использованием `unittest`.
+### `test_la_ner.py`
+- Импортирует функцию из `bin_la_ner.py`.
+- Содержит 6 тестов с использованием `unittest`.
+- Каждый тест выводит своё имя через `self._testMethodName`.
+- Добавлены тесты на недопустимые значения высоты (0 и отрицательные).
 
+### `test_la_ner.py`
 ```python
 import unittest
-from bin_nerek import gen_bin_tree_non_recursive
+from bin_la_ner import gen_bin_tree_non_recursive
 
-class TestGenBinTreeNonRecursive(unittest.TestCase):
+class TestGenBinTreeLambda(unittest.TestCase):
 
-    def test_h_0(self):
-        """Тест: высота 0, должно вернуть корень."""
+    def test_h_1(self):
+        """Тест: высота 1 — только корень (без потомков)."""
         print(f"Запущен тест: {self._testMethodName}")
-        result = gen_bin_tree_non_recursive(0, 10, "root + 1", "root - 1")
+        result = gen_bin_tree_non_recursive(1, 10, lambda x: x + 1, lambda x: x - 1)
         expected = {"value": 10}
         self.assertEqual(result, expected)
 
-    def test_h_1(self):
-        """Тест: высота 1, без вычислений."""
+    def test_h_2(self):
+        """Тест: высота 2 — корень + один уровень потомков."""
         print(f"Запущен тест: {self._testMethodName}")
-        result = gen_bin_tree_non_recursive(1, 5, "root * 2", "root / 2")
-        expected = {"value": 5}
-        self.assertEqual(result, expected)
-
-    def test_h_2_c(self):
-        """Тест: высота 2, вычисления с выражениями."""
-        print(f"Запущен тест: {self._testMethodName}")
-        result = gen_bin_tree_non_recursive(2, 1, "root + 2", "root * 3")
+        result = gen_bin_tree_non_recursive(2, 5, lambda x: x * 2, lambda x: x / 2)
         expected = {
-            "value": 1,
-            "left": {"value": 3},  # root(1) + 2
-            "right": {"value": 3}  # root(1) * 3
+            "value": 5,
+            "left": {"value": 10},
+            "right": {"value": 2.5}
         }
         self.assertEqual(result, expected)
 
-    def test_h_3_cf(self):
-        """Тест: высота 3, сложные выражения."""
+    def test_h_3(self):
+        """Тест: высота 3 — два уровня ветвления."""
         print(f"Запущен тест: {self._testMethodName}")
-        result = gen_bin_tree_non_recursive(3, 2, "root ** 2", "root - 1")
+        result = gen_bin_tree_non_recursive(3, 1, lambda x: x + 2, lambda x: x * 3)
         expected = {
-            "value": 2,
+            "value": 1,
             "left": {
-                "value": 4, # 2**2
-                "left": {"value": 16}, # 4**2
-                "right": {"value": 3}  # 4-1
+                "value": 3,
+                "left": {"value": 5},
+                "right": {"value": 9}
             },
             "right": {
-                "value": 1, # 2-1
-                "left": {"value": 1},  # 1**2
-                "right": {"value": 0}   # 1-1
+                "value": 3,
+                "left": {"value": 5},
+                "right": {"value": 9}
             }
         }
         self.assertEqual(result, expected)
 
-    def test_invalid(self):
-        """Тест: неверное выражение должно вызвать ValueError."""
+    def test_h_4_complex(self):
+        """Тест: высота 4 с возведением в степень и вычитанием."""
         print(f"Запущен тест: {self._testMethodName}")
-        with self.assertRaises(ValueError):
-            gen_bin_tree_non_recursive(2, 1, "root / 0", "root + 1")
+        result = gen_bin_tree_non_recursive(4, 2, lambda x: x ** 2, lambda x: x - 1)
+        expected = {
+            "value": 2,
+            "left": {
+                "value": 4,
+                "left": {
+                    "value": 16,
+                    "left": {"value": 256},
+                    "right": {"value": 15}
+                },
+                "right": {
+                    "value": 3,
+                    "left": {"value": 9},
+                    "right": {"value": 2}
+                }
+            },
+            "right": {
+                "value": 1,
+                "left": {
+                    "value": 1,
+                    "left": {"value": 1},
+                    "right": {"value": 0}
+                },
+                "right": {
+                    "value": 0,
+                    "left": {"value": 0},
+                    "right": {"value": -1}
+                }
+            }
+        }
+        self.assertEqual(result, expected)
 
-    def test_ext_var(self):
-        """Тест: нет доступа к внешним переменным."""
+    def test_invalid_height_zero(self):
+        """Тест: высота 0 должна вызывать ValueError (мин. высота = 1)."""
         print(f"Запущен тест: {self._testMethodName}")
-        global external_var
-        external_var = 100
         with self.assertRaises(ValueError):
-            gen_bin_tree_non_recursive(2, 1, "external_var", "root + 1")
+            gen_bin_tree_non_recursive(0, 5, lambda x: x, lambda x: x)
 
-    def test_builtin(self):
-        """Тест: нет доступа к встроенным функциям."""
+    def test_invalid_height_negative(self):
+        """Тест: отрицательная высота — ошибка."""
         print(f"Запущен тест: {self._testMethodName}")
         with self.assertRaises(ValueError):
-            gen_bin_tree_non_recursive(2, 1, "len(str(root))", "root + 1")
+            gen_bin_tree_non_recursive(-1, 5, lambda x: x, lambda x: x)
 
 
 if __name__ == '__main__':
@@ -224,28 +250,26 @@ if __name__ == '__main__':
 
 ## 4. Результаты тестирования
 
-Все 7 тестов успешно пройдены:
+Все 6 тестов успешно пройдены:
 
 ```
-Запущен тест: test_h_0
 Запущен тест: test_h_1
-Запущен тест: test_h_2_c
-Запущен тест: test_h_3_cf
-Запущен тест: test_invalid
-Запущен тест: test_ext_var
-Запущен тест: test_builtin
+Запущен тест: test_h_2
+Запущен тест: test_h_3
+Запущен тест: test_h_4_complex
+Запущен тест: test_invalid_height_zero
+Запущен тест: test_invalid_height_negative
 
 ----------------------------------------------------------------------
-Ran 7 tests in 0.002s
+Ran 6 tests in 0.003s
 
 OK
 ```
 
 Программа корректно:
-- Строит деревья заданной высоты.
-- Вычисляет потомков по пользовательским формулам на каждом уровне.
-- Обрабатывает ошибки в выражениях (некорректный синтаксис, деление на ноль и т.п.).
-- Обеспечивает безопасность выполнения выражений: запрещает доступ к встроенным функциям и внешним переменным.
-- Работает с параметрами по умолчанию при отсутствии ввода.
+- Строит деревья заданной высоты **итеративным способом** с использованием стека
+- Вычисляет потомков по пользовательским формулам
+- Обрабатывает ошибки в выражениях и недопустимые значения высоты
+- Работает с параметрами по умолчанию при отсутствии ввода
 
-Решение полностью соответствует требованиям лабораторной работы. 
+Решение полностью соответствует требованиям лабораторной работы.
